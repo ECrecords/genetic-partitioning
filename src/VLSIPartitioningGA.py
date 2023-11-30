@@ -30,20 +30,27 @@ class VLSIPartitionGA:
                     matrix[self.signals.index(dest), i] = 1
         return matrix
 
-    def initial_partitions(self, net_mat):
+    def gen_chromosome(self, net_mat):
         modules = list(range(len(net_mat)))
         random.shuffle(modules)
         partitions = [[] for _ in range(self.n_partitions)]
         for i, module in enumerate(modules):
             partitions[i % self.n_partitions].append(module)
-        return partitions
 
+        chromosome = np.zeros((len(self.signals)), dtype=int)
+        
+        for p, partition in enumerate(partitions):
+            for module in partition:
+                chromosome[module] = p
+
+        return chromosome
+    
     def setup_deap(self):
         creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
         creator.create("Individual", list, fitness=creator.FitnessMin)
 
-        self.toolbox.register("partition", self.initial_partitions, net_mat=self.net_matrix)
-        self.toolbox.register("individual", tools.initIterate, creator.Individual, self.toolbox.partition)
+        self.toolbox.register("chromosome", self.gen_chromosome, net_mat=self.net_matrix)
+        self.toolbox.register("individual", tools.initIterate, creator.Individual, self.toolbox.chromosome)
         self.toolbox.register("population", tools.initRepeat, list, self.toolbox.individual)
 
     def create_population(self):
