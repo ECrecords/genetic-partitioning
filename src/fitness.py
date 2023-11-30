@@ -1,16 +1,20 @@
 import numpy as np
 
-def count_cuts_with_indices(connectivity_graph, net_graph, partitioning_graph):
+def count_cuts_with_indices(connectivity_graph, net_graph, partitioning_graph, is_chromsome = False):
     num_modules = len(connectivity_graph)
     num_nets = len(net_graph)
     num_partitions = len(partitioning_graph)
     cuts = 0
     cut_indices = []
+    module_partition = []
 
-    module_partition = list(range(num_modules))
-    for partitioning_idx, partitioning in enumerate(partitioning_graph):
-        for module in partitioning:
-            module_partition[module-1] = partitioning_idx
+    if is_chromsome:
+        module_partition = partitioning_graph
+    else:
+        module_partition = list(range(num_modules))
+        for partitioning_idx, partitioning in enumerate(partitioning_graph):
+            for module in partitioning:
+                module_partition[module-1] = partitioning_idx
 
     # Convert partitioning_graph to a more easily searchable format
     # module_partition = np.argmax(partitioning_graph, axis=0)
@@ -53,11 +57,37 @@ net_graph = np.array([
 #     [0, 1, 0, 1]
 # ])
 
-partitioning_graph = np.array([
-    [1, 3],
-    [2, 4]
-])
+# partitioning_graph = np.array([
+#     [1, 3],
+#     [2, 4]
+# ])
 
-cuts, cut_indices = count_cuts_with_indices(connectivity_graph, net_graph, partitioning_graph)
+partitioning_graph = [0,1,0,1]
+
+cuts, cut_indices = count_cuts_with_indices(connectivity_graph, net_graph, partitioning_graph, is_chromsome=True)
 print("Number of cuts:", cuts)
 print("Indices of cuts in net_graph:", cut_indices)
+
+
+# def calculate_elmore_delay(resistances, capacitances):
+#     """
+#     Calculate the Elmore delay for a simple linear circuit.
+    
+#     :param resistances: List of resistances between nodes.
+#     :param capacitances: List of capacitances at each node.
+#     :return: Elmore delay of the circuit.
+#     """
+#     total_delay = 0
+#     for i in range(len(resistances)):
+#         r_total = sum(resistances[:i + 1])  # Total resistance up to the current node
+#         for c in capacitances[i:]:
+#             total_delay += r_total * c  # Add the RC product for each capacitance
+
+#     return total_delay
+
+# # Example usage
+# resistances = [1, 2, 3]  # Resistances between nodes (Ohms)
+# capacitances = [0.5, 0.5, 0.5, 0.5]  # Capacitances at each node (Farads)
+
+# elmore_delay = calculate_elmore_delay(resistances, capacitances)
+# print(f"Elmore Delay: {elmore_delay} seconds")
