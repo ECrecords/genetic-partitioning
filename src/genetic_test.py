@@ -1,69 +1,76 @@
 import random
-from deap import base, creator, tools
 import numpy as np
+from deap import base, creator, tools
 
-class FitnessEvaluator:
-    def evaluate(self, individual):
-        # Define the evaluation logic
-        pass
+class VLSIPartitionGA:
+    def __init__(self, signals, connections, n_partitions, pop_size):
+        self.signals = signals
+        self.connections = connections
+        self.n_partitions = n_partitions
+        self.pop_size = pop_size
 
-class Individual(list):
-    def __init__(self, chromosome):
-        super().__init__(chromosome)
-        self.fitness = None
+        self.connectivity_matrix = self.create_connectivity_matrix()
+        self.net_matrix = self.create_net_matrix()
+        self.toolbox = base.Toolbox()
+        self.setup_deap()
 
-class GeneticAlgorithm:
-    def __init__(self,fitness_evaluator, crossover_operator, mutation_operator, selection_operator):
-        self.fitness_evaluator = fitness_evaluator
-        self.crossover_operator = crossover_operator
-        self.mutation_operator = mutation_operator
-        self.selection_operator = selection_operator
+    def create_connectivity_matrix(self):
+        matrix = np.zeros((len(self.signals), len(self.signals)), dtype=int)
+        for src, dests in self.connections.items():
+            for dest in dests:
+                matrix[self.signals.index(src), self.signals.index(dest)] = 1
+        return matrix
 
-    def create_population(self, connectivity_matrix: np.ndarray, net_matrix: np.ndarray, n_partitions: int, population_size: int) -> list:
-            """
-            Create an initial population of individuals.
+    def create_net_matrix(self):
+        matrix = np.zeros((len(self.signals), len(self.signals)), dtype=int)
+        for i, signal in enumerate(self.signals):
+            if signal in self.connections:
+                for dest in self.connections[signal]:
+                    matrix[i, self.signals.index(dest)] = 1
+                    matrix[self.signals.index(dest), i] = 1
+        return matrix
 
-            Args:
-                connectivity_matrix (np.ndarray): The connectivity matrix of the circuit.
-                net_matrix (np.ndarray): The net matrix of the circuit.
-                n_partitions (int): Number of partitions to create.
-                population_size (int): The size of the population to be generated.
+    def initial_partitions(self, net_mat):
+        modules = list(range(len(net_mat)))
+        random.shuffle(modules)
+        partitions = [[] for _ in range(self.n_partitions)]
+        for i, module in enumerate(modules):
+            partitions[i % self.n_partitions].append(module)
+        return partitions
 
-            Returns:
-                list: A list of individuals representing the initial population.
-            """
-            num_modules = len(connectivity_matrix)
-            population = []
-            for _ in range(population_size):
-                # For each individual, randomly assign each module to a partition
-                chromosome = [random.randint(0, n_partitions - 1) for _ in range(num_modules)]
-                individual = Individual(chromosome)
-                population.append(individual)
+    def setup_deap(self):
+        creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
+        creator.create("Individual", list, fitness=creator.FitnessMin)
 
-            return population
+        self.toolbox.register("partition", self.initial_partitions, net_mat=self.net_matrix)
+        self.toolbox.register("individual", tools.initIterate, creator.Individual, self.toolbox.partition)
+        self.toolbox.register("population", tools.initRepeat, list, self.toolbox.individual)
 
-    def run(self, generations):
-        # Run the genetic algorithm for the specified number of generations
-        pass
+    def create_population(self):
+        return self.toolbox.population(n=self.pop_size)
 
-    def evaluate_population(self, population):
-        # Evaluate the population
-        pass
-
-    def select_best_individual(self, population):
-        # Select the best individual
-        pass
-
+    def display_matrices(self):
+        print("Connectivity Matrix:\n", self.connectivity_matrix)
+        print("\nNet Matrix:\n", self.net_matrix)
 
 if __name__ == "__main__":
-    # Example usage
-    fitness_evaluator = MyFitnessEvaluator()
-    crossover_operator = tools.cxTwoPoint
-    mutation_operator = tools.mutFlipBit
-    selection_operator = tools.selTournament
+    # Usage
+    signals = ["a", "b", "sel", "not_sel", "a_and_not_sel", "b_and_sel", "out"]
+    connections = {
+        "sel": ["not_sel", "b_and_sel"],
+        "not_sel": ["a_and_not_sel"],
+        "a": ["a_and_not_sel"],
+        "b": ["b_and_sel"],
+        "a_and_not_sel": ["out"],
+        "b_and_sel": ["out"]
+    }
+    n_partitions = 3
+    pop_size = 13
 
-    ga = GeneticAlgorithm(fitness_evaluator, crossover_operator, mutation_operator, selection_operator)
+    ga = VLSIPartitionGA(signals, connections, n_partitions, pop_size)
     population = ga.create_population()
-    ga.run(100)
-    best_individual = ga.select_best_individual(population)
-    print("Best individual:", best_individual)
+    ga.display_matrices()
+
+    print("\nPopulation:")
+    for individual in population:
+        print(individual)
