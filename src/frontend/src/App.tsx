@@ -1,26 +1,22 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import NetworkGraph from './NetworkGraph'; // Adjust the import path as needed
 
-function App() {
+const App: React.FC = () => {
+  // Generate dummy data for nodes and links
+  const nodes = Array.from({ length: 500 }, (_, index) => ({ id: String(index + 1) }));
+  const links = Array.from({ length: 500 }, (_, index) => ({
+    source: String(index % 100 + 1),
+    target: String((index + 1) % 100 + 1),
+  }));
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <h1>Network Graph Example</h1>
       </header>
+      <NetworkGraph nodes={nodes} links={links} />
     </div>
   );
-}
+};
 
 export default App;
