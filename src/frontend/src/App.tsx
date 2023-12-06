@@ -1,20 +1,52 @@
-import React from 'react';
-import NetworkGraph from './NetworkGraph'; // Adjust the import path as needed
+import React, { useEffect, useState, useRef } from 'react';
+import $ from 'jquery';
+import MyNavbar from './MyNavbar';
+import NetworkGraph from './NetworkGraph';
 
 const App: React.FC = () => {
-  // Generate dummy data for nodes and links
-  const nodes = Array.from({ length: 500 }, (_, index) => ({ id: String(index + 1) }));
-  const links = Array.from({ length: 500 }, (_, index) => ({
-    source: String(index % 100 + 1),
-    target: String((index + 1) % 100 + 1),
-  }));
+  const [svgDimensions, setSvgDimensions] = useState({ width: 616, height: 400 });
+  const navbarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (navbarRef.current) {
+        let navbarWidth = $(navbarRef.current).outerWidth() || 0;
+        let univSvgWidth = (navbarWidth * 2) / 3 - 48;
+        let univSvgHeight = univSvgWidth * 0.54;
+        if (univSvgWidth < 616) univSvgWidth = 616;
+        if (univSvgHeight < 400) univSvgHeight = 400;
+        setSvgDimensions({ width: univSvgWidth, height: univSvgHeight });
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Generate pentagram graph
+  const nodes = [
+    { id: '1' },
+    { id: '2' },
+    { id: '3' },
+    { id: '4' },
+    { id: '5' },
+  ];
+  const links = [
+    { source: '1', target: '2' },
+    { source: '2', target: '3' },
+    { source: '3', target: '4' },
+    { source: '4', target: '5' },
+    { source: '5', target: '1' },
+  ];
 
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>Network Graph Example</h1>
-      </header>
-      <NetworkGraph nodes={nodes} links={links} />
+      <div ref={navbarRef}>
+        <MyNavbar />
+      </div>
+      <NetworkGraph nodes={nodes} links={links} dimensions={svgDimensions} />
     </div>
   );
 };
