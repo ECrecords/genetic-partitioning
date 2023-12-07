@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 # calculate the count of the cuts of graph.
 def count_cuts_with_indices(connectivity_graph, net_graph, partitioning_graph, is_chromsome = False):
@@ -63,11 +64,11 @@ net_graph = np.array([
 #     [2, 4]
 # ])
 
-partitioning_graph = [0,1,0,1]
+# partitioning_graph = [0,1,0,1]
 
-cuts, cut_indices = count_cuts_with_indices(connectivity_graph, net_graph, partitioning_graph, is_chromsome=True)
-print("Number of cuts:", cuts)
-print("Indices of cuts in net_graph:", cut_indices)
+# cuts, cut_indices = count_cuts_with_indices(connectivity_graph, net_graph, partitioning_graph, is_chromsome=True)
+# print("Number of cuts:", cuts)
+# print("Indices of cuts in net_graph:", cut_indices)
 
 
 # def calculate_elmore_delay(resistances, capacitances):
@@ -94,7 +95,31 @@ print("Indices of cuts in net_graph:", cut_indices)
 # print(f"Elmore Delay: {elmore_delay} seconds")
 
 
+def generate_sleep_periods(num_modules, min_start_time, max_start_time, min_duration, max_duration):
+    """
+    Generate random start and finish sleep times for each module in the circuit.
 
+    :param num_modules: Number of modules in the circuit.
+    :param min_start_time: Minimum start time for any module.
+    :param max_start_time: Maximum start time for any module.
+    :param min_duration: Minimum duration of sleep time for any module.
+    :param max_duration: Maximum duration of sleep time for any module.
+    :return: A list of tuples with start and finish sleep times for each module.
+    
+        num_modules = 10  # Number of modules in your circuit
+        min_start_time = 0  # Minimum start sleep time in seconds
+        max_start_time = 5  # Maximum start sleep time in seconds
+        min_duration = 1  # Minimum duration of sleep in seconds
+        max_duration = 3  # Maximum duration of sleep in seconds
+    """
+    sleep_periods = []
+    for _ in range(num_modules):
+        start_time = round(random.uniform(min_start_time, max_start_time))
+        duration = round(random.uniform(min_duration, max_duration))
+        finish_time = start_time + duration
+        sleep_periods.append((start_time, finish_time))
+
+    return sleep_periods
 
 # get the sleep peried and the switch on time (SD(sp) and SWp)
 def find_common_intervals(intervals):
@@ -125,7 +150,6 @@ def calculate_sleep_intervals_and_switches(partitioning_graph, sleep_periods):
         # Find intersecting sleep periods for each partition
         intervals = [sleep_periods[module] for module in partition]
         common_sleep = find_common_intervals(intervals)
-
         partition_sleep_intervals.append(common_sleep)
 
         # Count the number of switches for each partition
@@ -137,11 +161,28 @@ def calculate_sleep_intervals_and_switches(partitioning_graph, sleep_periods):
         partition_switch_counts.append(switch_count)
 
         # Count the number of intervals for each partition
-        interval_count = common_sleep[0][1] - common_sleep[0][0]
+        interval_count = common_sleep[0][1] - common_sleep[0][0] + 1
         partition_interval_counts.append(interval_count)
-
     return partition_sleep_intervals, partition_switch_counts, partition_interval_counts
 
-def calculate_Y2(partitioning_graph, sleep_periods, b = 1):
+def calculate_Y2(individuals, sleep_periods, b = 1.0):
+    partitioning_graph = list()
+    for idx in range(max(individuals) + 1):
+        partitioning = list()
+        for i, individual in enumerate(individuals):
+            if idx == individual:
+                partitioning.append(i)
+        partitioning_graph.append(partitioning)
+        pass
     sleep_intervals, switch_counts, interval_counts = calculate_sleep_intervals_and_switches(partitioning_graph, sleep_periods)
-    return sum(np.array(interval_counts)) -  sum(np.array(switch_counts*b))
+    # print(sum(np.array(interval_counts)))
+    # print(b * sum(np.array(switch_counts)))
+    return sum(np.array(interval_counts)) -  b * sum(np.array(switch_counts))
+
+
+# # Example usage
+# partitioning_graph = [[0, 1], [2, 3]]
+# individuals = [0, 0, 1, 1]  
+# sleep_periods = [(1, 4), (3, 5), (2, 6), (0, 7)]  # Sleep periods for each module
+
+# print(calculate_Y2(individuals, sleep_periods, 0.5))

@@ -2,6 +2,7 @@ import numpy as np
 from VLSIPartitioningGA import VLSIPartitionGA
 import random
 import deap.tools as tools
+import fitness
 
 # Global parameters for the genetic algorithm
 CROSSOVER_PROB = 0.7  # Probability with which two individuals are crossed
@@ -47,7 +48,9 @@ if __name__ == "__main__":
     n_partitions = 3
     pop_size = 13
 
-    ga = VLSIPartitionGA(connectivity_matrix, net_matrix, n_partitions, pop_size)
+    sleep_periods = fitness.generate_sleep_periods(len(connectivity_matrix), 0, 50, 3, 100)
+
+    ga = VLSIPartitionGA(connectivity_matrix, net_matrix, sleep_periods, n_partitions, pop_size)
     population = ga.create_population()
 
     ga.display_matrices()
