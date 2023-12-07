@@ -5,6 +5,8 @@ import deap.tools as tools
 import fitness
 import matplotlib.pyplot as plt
 from datetime import datetime
+import pandas as pd
+import networkx as nx
 # Global parameters for the genetic algorithm
 CROSSOVER_PROB = 0.7  # Probability with which two individuals are crossed
 MUTATION_PROB = 0.2   # Probability of mutating an individual
@@ -28,27 +30,36 @@ if __name__ == "__main__":
     #     "out": ["or"]
     # }
 
-    connectivity_matrix = np.array( [
-            [0, 0, 0, 0, 1, 0, 0, 0], # 0
-            [0, 0, 0, 0, 0, 1, 0, 0], # 1
-            [0, 0, 0, 1, 0, 1, 0, 0], # 2
-            [0, 0, 1, 0, 1, 0, 0, 0], # 3
-            [1, 0, 0, 1, 0, 0, 1, 0], # 4
-            [0, 1, 1, 0, 0, 0, 1, 0], # 5
-            [0, 0, 0, 0, 1, 1, 0, 1], # 6
-            [0, 0, 0, 0, 0, 0, 1, 0]  # 7
-        ])
+    # connectivity_matrix = np.array( [
+    #         [0, 0, 0, 0, 1, 0, 0, 0], # 0
+    #         [0, 0, 0, 0, 0, 1, 0, 0], # 1
+    #         [0, 0, 0, 1, 0, 1, 0, 0], # 2
+    #         [0, 0, 1, 0, 1, 0, 0, 0], # 3
+    #         [1, 0, 0, 1, 0, 0, 1, 0], # 4
+    #         [0, 1, 1, 0, 0, 0, 1, 0], # 5
+    #         [0, 0, 0, 0, 1, 1, 0, 1], # 6
+    #         [0, 0, 0, 0, 0, 0, 1, 0]  # 7
+    #     ])
     
-    net_matrix = np.array([
-            [1, 0, 0, 0, 1, 0, 0, 0], # 0
-            [0, 1, 0, 0, 0, 1, 0, 0], # 1
-            [0, 0, 1, 1, 0, 0, 0, 0], # 2
-            [0, 0, 1, 0, 0, 1, 0, 0], # 3
-            [0, 0, 0, 1, 1, 0, 0, 0], # 4
-            [0, 0, 0, 0, 1, 0, 1, 0], # 5
-            [0, 0, 0, 0, 0, 1, 1, 0], # 6
-           [0, 0, 0, 0, 0, 0, 1, 1] # 7     
-        ])
+    # net_matrix = np.array([
+    #         [1, 0, 0, 0, 1, 0, 0, 0], # 0
+    #         [0, 1, 0, 0, 0, 1, 0, 0], # 1
+    #         [0, 0, 1, 1, 0, 0, 0, 0], # 2
+    #         [0, 0, 1, 0, 0, 1, 0, 0], # 3
+    #         [0, 0, 0, 1, 1, 0, 0, 0], # 4
+    #         [0, 0, 0, 0, 1, 0, 1, 0], # 5
+    #         [0, 0, 0, 0, 0, 1, 1, 0], # 6
+    #        [0, 0, 0, 0, 0, 0, 1, 1] # 7     
+    #     ])
+
+        # Read the CSV file to get the edges
+    edges_from_csv = pd.read_csv("data/connectivity_graph_edges.csv")
+
+    # Create a new graph from the edges
+    graph = nx.from_pandas_edgelist(edges_from_csv)
+    con_mat = nx.to_numpy_array(graph)
+
+    net_mat = nx.incidence_matrix(graph).toarray()
 
     n_partitions = 3
     pop_size = 13
@@ -58,11 +69,11 @@ if __name__ == "__main__":
 
     comb_fit_iter = []
 
-    # sleep_periods = fitness.generate_sleep_periods(len(connectivity_matrix), 0, 50, 3, 20)
-    sleep_periods = [(24, 34), (11, 22), (32, 43), (21, 34), (2, 17), (48, 68), (6, 11), (42, 55)]
+    sleep_periods = fitness.generate_sleep_periods(len(con_mat), 0, 50, 3, 20)
+    # sleep_periods = [(24, 34), (11, 22), (32, 43), (21, 34), (2, 17), (48, 68), (6, 11), (42, 55)]
     print(sleep_periods)
 
-    ga = VLSIPartitionGA(connectivity_matrix, net_matrix, sleep_periods, n_partitions, pop_size)
+    ga = VLSIPartitionGA(con_mat, net_mat, sleep_periods, n_partitions, pop_size)
     population = ga.create_population()
 
     ga.display_matrices()
