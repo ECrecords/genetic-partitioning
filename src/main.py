@@ -48,7 +48,9 @@ if __name__ == "__main__":
     n_partitions = 3
     pop_size = 13
 
-    sleep_periods = fitness.generate_sleep_periods(len(connectivity_matrix), 0, 50, 3, 100)
+    cuts_over_time = []
+
+    sleep_periods = fitness.generate_sleep_periods(len(connectivity_matrix), 0, 50, 3, 20)
 
     ga = VLSIPartitionGA(connectivity_matrix, net_matrix, sleep_periods, n_partitions, pop_size)
     population = ga.create_population()
@@ -57,7 +59,7 @@ if __name__ == "__main__":
 
     # Assuming you have a method in your class to evaluate fitness
     for individual in population:
-        individual.fitness.values = ga.y1(individual)
+        individual.fitness.values = ga.y(individual)
 
     # Number of generations
     n_generations = 100
@@ -91,6 +93,8 @@ if __name__ == "__main__":
         population[:] = offspring
 
         # Optional: Print out statistics or log data here
+        for ind in population:
+            print(ind.y1_value, ind.y3_value)
 
     # Extracting the best solution
     best_ind = tools.selBest(population, 1)[0]
