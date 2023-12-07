@@ -3,55 +3,14 @@ import numpy as np
 from deap import base, creator, tools
 
 class VLSIPartitionGA:
-    def __init__(self, signals, connections, n_partitions, pop_size):
-        self.signals = signals
-        self.connections = connections
+    def __init__(self, con_mat, net_mat, n_partitions, pop_size):
         self.n_partitions = n_partitions
         self.pop_size = pop_size
-
+        self.net_mat = net_mat
+        self.con_mat = con_mat
         
-        self.connectivity_matrix = np.array( [
-            [0, 0, 0, 0, 1, 0, 0, 0], # 0
-            [0, 0, 0, 0, 0, 1, 0, 0], # 1
-            [0, 0, 0, 1, 0, 1, 0, 0], # 2
-            [0, 0, 1, 0, 1, 0, 0, 0], # 3
-            [1, 0, 0, 1, 0, 0, 1, 0], # 4
-            [0, 1, 1, 0, 0, 0, 1, 0], # 5
-            [0, 0, 0, 0, 1, 1, 0, 1], # 6
-            [0, 0, 0, 0, 0, 0, 1, 0]  # 7
-        ])
-
-        self.connectivity_matrix = self.create_connectivity_matrix()
-        self.net_matrix = self.create_net_matrix()
-
-        self.net_matrix = np.array([
-            [1, 0, 0, 0, 1, 0, 0, 0], # 0
-            [0, 1, 0, 0, 0, 1, 0, 0], # 1
-            [0, 0, 1, 1, 0, 0, 0, 0], # 2
-            [0, 0, 1, 0, 0, 1, 0, 0], # 3
-            [0, 0, 0, 1, 1, 0, 0, 0], # 4
-            [0, 0, 0, 0, 1, 0, 1, 0], # 5
-            [0, 0, 0, 0, 0, 1, 1, 0], # 6
-           [0, 0, 0, 0, 0, 0, 1, 1] # 7     
-        ])
         self.toolbox = base.Toolbox()
         self.setup_deap()
-
-    def create_connectivity_matrix(self):
-        matrix = np.zeros((len(self.signals), len(self.signals)), dtype=int)
-        for src, dests in self.connections.items():
-            for dest in dests:
-                matrix[self.signals.index(src), self.signals.index(dest)] = 1
-        return matrix
-
-    def create_net_matrix(self):
-        matrix = np.zeros((len(self.signals), len(self.signals)), dtype=int)
-        for i, signal in enumerate(self.signals):
-            if signal in self.connections:
-                for dest in self.connections[signal]:
-                    matrix[i, self.signals.index(dest)] = 1
-                    matrix[self.signals.index(dest), i] = 1
-        return matrix
 
     def gen_chromosome(self, net_mat):
         modules = list(range(len(net_mat)))
@@ -60,7 +19,7 @@ class VLSIPartitionGA:
         for i, module in enumerate(modules):
             partitions[i % self.n_partitions].append(module)
 
-        chromosome = np.zeros((len(self.connectivity_matrix)), dtype=int)
+        chromosome = np.zeros((len(self.con_mat)), dtype=int)
         
         for p, partition in enumerate(partitions):
             for module in partition:
@@ -70,7 +29,7 @@ class VLSIPartitionGA:
     
     # fitness function used to calculed number of uncut nets
     def y1(self, partition):
-        num_nets = self.net_matrix.shape[0]
+        num_nets = self.net_mat.shape[0]
         num_partitions = np.max(partition) + 1
         
         uncut_nets = 0
@@ -81,7 +40,7 @@ class VLSIPartitionGA:
 
             # Check which partitions the modules connected to this net belong to
             for i in range(len(partition)):
-                if self.net_matrix[j, i] == 1:
+                if self.net_mat[j, i] == 1:
                     net_in_partition[partition[i]] = True
 
             # If the net is in exactly one partition, it is uncut
@@ -96,7 +55,7 @@ class VLSIPartitionGA:
         creator.create("FitnessMin", base.Fitness, weights=(1.0,))
         creator.create("Individual", list, fitness=creator.FitnessMin)
 
-        self.toolbox.register("chromosome", self.gen_chromosome, net_mat=self.net_matrix)
+        self.toolbox.register("chromosome", self.gen_chromosome, net_mat=self.net_mat)
         self.toolbox.register("individual", tools.initIterate, creator.Individual, self.toolbox.chromosome)
         self.toolbox.register("population", tools.initRepeat, list, self.toolbox.individual)
 
@@ -114,5 +73,5 @@ class VLSIPartitionGA:
         return self.toolbox.population(n=self.pop_size)
 
     def display_matrices(self):
-        print("Connectivity Matrix:\n", self.connectivity_matrix)
-        print("\nNet Matrix:\n", self.net_matrix)
+        print("Connectivity Matrix:\n", self.con_mat)
+        print("\nNet Matrix:\n", self.net_mat)
