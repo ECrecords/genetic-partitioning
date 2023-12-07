@@ -32,7 +32,7 @@ class VLSIPartitionGA:
         num_nets = self.net_mat.shape[0]
         num_partitions = np.max(partition) + 1
         
-        uncut_nets = 0
+        cut_nets = 0  # Changed from uncut_nets to cut_nets
 
         # Iterate over each net
         for j in range(num_nets):
@@ -43,16 +43,17 @@ class VLSIPartitionGA:
                 if self.net_mat[j, i] == 1:
                     net_in_partition[partition[i]] = True
 
-            # If the net is in exactly one partition, it is uncut
-            if np.sum(net_in_partition) == 1:
-                uncut_nets += 1
+            # If the net spans more than one partition, it is cut
+            if np.sum(net_in_partition) > 1:  # Changed the condition here
+                cut_nets += 1
 
-        return (uncut_nets,)
+        return (cut_nets,)  # Returning the number of cut nets
+
      
     
     def setup_deap(self):
 
-        creator.create("FitnessMin", base.Fitness, weights=(1.0,))
+        creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
         creator.create("Individual", list, fitness=creator.FitnessMin)
 
         self.toolbox.register("chromosome", self.gen_chromosome, net_mat=self.net_mat)
