@@ -137,7 +137,6 @@ def find_common_intervals(intervals):
             common_intervals[-1] = (max(last_start, start), min(last_end, end))
         else:  # Non-overlapping interval, break as no further intersection possible
             break
-
     return [interval for interval in common_intervals if interval[0] < interval[1]]
 
 def calculate_sleep_intervals_and_switches(partitioning_graph, sleep_periods):
@@ -161,11 +160,13 @@ def calculate_sleep_intervals_and_switches(partitioning_graph, sleep_periods):
         partition_switch_counts.append(switch_count)
 
         # Count the number of intervals for each partition
-        interval_count = common_sleep[0][1] - common_sleep[0][0] + 1
+        interval_count = 0
+        if len(common_sleep) is not 0:
+            interval_count = common_sleep[0][1] - common_sleep[0][0] + 1
         partition_interval_counts.append(interval_count)
     return partition_sleep_intervals, partition_switch_counts, partition_interval_counts
 
-def calculate_Y2(individuals, sleep_periods, b = 1.0):
+def calculate_Y3(individuals, sleep_periods, b = 1.0):
     partitioning_graph = list()
     for idx in range(max(individuals) + 1):
         partitioning = list()
@@ -180,7 +181,7 @@ def calculate_Y2(individuals, sleep_periods, b = 1.0):
     return sum(np.array(interval_counts)) -  b * sum(np.array(switch_counts))
 
 
-# # Example usage
+# # # Example usage
 # partitioning_graph = [[0, 1], [2, 3]]
 # individuals = [0, 0, 1, 1]  
 # sleep_periods = [(1, 4), (3, 5), (2, 6), (0, 7)]  # Sleep periods for each module
