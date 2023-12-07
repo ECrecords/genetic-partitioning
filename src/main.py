@@ -3,10 +3,14 @@ from VLSIPartitioningGA import VLSIPartitionGA
 import random
 import deap.tools as tools
 import fitness
-
+import matplotlib.pyplot as plt
+from datetime import datetime
 # Global parameters for the genetic algorithm
 CROSSOVER_PROB = 0.7  # Probability with which two individuals are crossed
 MUTATION_PROB = 0.2   # Probability of mutating an individual
+
+# generate timestamp
+timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
 
 
 if __name__ == "__main__":
@@ -48,7 +52,8 @@ if __name__ == "__main__":
     n_partitions = 3
     pop_size = 13
 
-    cuts_over_time = []
+    cuts_iter = []
+    power_iter = []
 
     sleep_periods = fitness.generate_sleep_periods(len(connectivity_matrix), 0, 50, 3, 20)
 
@@ -93,8 +98,28 @@ if __name__ == "__main__":
         population[:] = offspring
 
         # Optional: Print out statistics or log data here
-        for ind in population:
-            print(ind.y1_value, ind.y3_value)
+        pop_cuts = [ind.y1_value for ind in population]
+        avg_cuts = sum(pop_cuts) / len(pop_cuts)
+        cuts_iter.append(avg_cuts)
+
+        pop_power_comsumption = [ind.y3_value for ind in population]
+        avg_power_comsumption = sum(pop_power_comsumption) / len(pop_power_comsumption)
+        power_iter.append(avg_power_comsumption)
+
+    # Plot the average number of cuts over time
+    plt.plot(cuts_iter)
+    plt.xlabel("Generation")
+    plt.ylabel("Average number of cuts")
+    
+    #save to file
+    plt.savefig(f'cuts_over_time_{timestamp}.png')
+
+    # plot the average power consumption over time
+    plt.plot(power_iter)
+    plt.xlabel("Generation")
+    plt.ylabel("Average power consumption")
+     #save to file
+    plt.savefig(f'power_over_time_{timestamp}.png')
 
     # Extracting the best solution
     best_ind = tools.selBest(population, 1)[0]
