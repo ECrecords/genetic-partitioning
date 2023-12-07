@@ -1,14 +1,37 @@
 import random
 import numpy as np
 from deap import base, creator, tools
+import fitness
 
 class VLSIPartitionGA:
-    def __init__(self, con_mat, net_mat, n_partitions, pop_size):
+    def __init__(self, connectivity_matrix, net_matrix, n_partitions, pop_size):
         self.n_partitions = n_partitions
         self.pop_size = pop_size
-        self.net_mat = net_mat
-        self.con_mat = con_mat
-        
+        self.connectivity_matrix = connectivity_matrix
+        self.net_matrix = net_matrix
+
+        self.connectivity_matrix = np.array( [
+            [0, 0, 0, 0, 1, 0, 0, 0], # 0
+            [0, 0, 0, 0, 0, 1, 0, 0], # 1
+            [0, 0, 0, 1, 0, 1, 0, 0], # 2
+            [0, 0, 1, 0, 1, 0, 0, 0], # 3
+            [1, 0, 0, 1, 0, 0, 1, 0], # 4
+            [0, 1, 1, 0, 0, 0, 1, 0], # 5
+            [0, 0, 0, 0, 1, 1, 0, 1], # 6
+            [0, 0, 0, 0, 0, 0, 1, 0]  # 7
+        ])
+
+        self.net_matrix = np.array([
+            [1, 0, 0, 0, 1, 0, 0, 0], # 0
+            [0, 1, 0, 0, 0, 1, 0, 0], # 1
+            [0, 0, 1, 1, 0, 0, 0, 0], # 2
+            [0, 0, 1, 0, 0, 1, 0, 0], # 3
+            [0, 0, 0, 1, 1, 0, 0, 0], # 4
+            [0, 0, 0, 0, 1, 0, 1, 0], # 5
+            [0, 0, 0, 0, 0, 1, 1, 0], # 6
+            [0, 0, 0, 0, 0, 0, 1, 1]  # 7     
+        ])
+        self.sleep_periods = fitness.generate_sleep_periods(len(signals), 0, 100, 3, 100)
         self.toolbox = base.Toolbox()
         self.setup_deap()
 
@@ -49,6 +72,20 @@ class VLSIPartitionGA:
 
         return (uncut_nets,)
      
+    def eval_fitness(self, individual):
+        # Calculate the number of nets crossing partitions
+        nets_crossing = 0
+        for i, row in enumerate(self.net_matrix):
+            for j, col in enumerate(row):
+                if col == 1 and individual[i] != individual[j]:
+                    nets_crossing += 1
+        return (nets_crossing,)
+    
+    def eval_fitness_by_time(self, individual):
+        # Calculate Y3
+        y3 = fitness.calculate_Y2(individual, self.sleep_periods, 0.5)
+        return (y3,)
+
     
     def setup_deap(self):
 
@@ -66,7 +103,7 @@ class VLSIPartitionGA:
         # Mutation: Randomly change the partition assignment of a module
         self.toolbox.register("mutate", tools.mutUniformInt, low=1, up=self.n_partitions, indpb=0.1)
         # Fitness function
-        self.toolbox.register("evaluate", self.y1)
+        self.toolbox.register("evaluate", self.eval_fitness_by_time)
 
 
     def create_population(self):
