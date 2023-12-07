@@ -10,54 +10,28 @@ MUTATION_PROB = 0.2   # Probability of mutating an individual
 
 if __name__ == "__main__":
     # Usage
-    # signals = ["a", "b", "sel", "not_sel", "a_and_not_sel", "b_and_sel", "or", "out"]
-    # connections = {
-    #     "sel": ["not_sel", "b_and_sel"],
-    #     "not_sel": ["a_and_not_sel"],
-    #     "a": ["a_and_not_sel"],
-    #     "b": ["b_and_sel"],
-    #     "a_and_not_sel": ["or", "a", "not_sel"],
-    #     "b_and_sel": ["or", "b", "sel"],
-    #     "or": ["a_and_not_sel", "b_and_sel"],
-    #     "out": ["or"]
-    # }
-
-    connectivity_matrix = np.array( [
-            [0, 0, 0, 0, 1, 0, 0, 0], # 0
-            [0, 0, 0, 0, 0, 1, 0, 0], # 1
-            [0, 0, 0, 1, 0, 1, 0, 0], # 2
-            [0, 0, 1, 0, 1, 0, 0, 0], # 3
-            [1, 0, 0, 1, 0, 0, 1, 0], # 4
-            [0, 1, 1, 0, 0, 0, 1, 0], # 5
-            [0, 0, 0, 0, 1, 1, 0, 1], # 6
-            [0, 0, 0, 0, 0, 0, 1, 0]  # 7
-        ])
-    
-    net_matrix = np.array([
-            [1, 0, 0, 0, 1, 0, 0, 0], # 0
-            [0, 1, 0, 0, 0, 1, 0, 0], # 1
-            [0, 0, 1, 1, 0, 0, 0, 0], # 2
-            [0, 0, 1, 0, 0, 1, 0, 0], # 3
-            [0, 0, 0, 1, 1, 0, 0, 0], # 4
-            [0, 0, 0, 0, 1, 0, 1, 0], # 5
-            [0, 0, 0, 0, 0, 1, 1, 0], # 6
-           [0, 0, 0, 0, 0, 0, 1, 1] # 7     
-        ])
-
+    signals = ["a", "b", "sel", "not_sel", "a_and_not_sel", "b_and_sel", "out"]
+    connections = {
+        "sel": ["not_sel", "b_and_sel"],
+        "not_sel": ["a_and_not_sel"],
+        "a": ["a_and_not_sel"],
+        "b": ["b_and_sel"],
+        "a_and_not_sel": ["out"],
+        "b_and_sel": ["out"]
+    }
     n_partitions = 3
     pop_size = 13
 
-    ga = VLSIPartitionGA(connectivity_matrix, net_matrix, n_partitions, pop_size)
+    ga = VLSIPartitionGA(signals, connections, n_partitions, pop_size)
     population = ga.create_population()
-
     ga.display_matrices()
 
     # Assuming you have a method in your class to evaluate fitness
     for individual in population:
-        individual.fitness.values = ga.y1(individual)
+        individual.fitness.values = ga.eval_fitness(individual)
 
     # Number of generations
-    n_generations = 100
+    n_generations = 50
 
     for gen in range(n_generations):
         # Select the next generation individuals
@@ -93,3 +67,4 @@ if __name__ == "__main__":
     best_ind = tools.selBest(population, 1)[0]
     print(f"Best Individual: {best_ind}")
     print(f"Best Fitness: {best_ind.fitness.values}")
+
