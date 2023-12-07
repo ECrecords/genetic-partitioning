@@ -55,6 +55,8 @@ if __name__ == "__main__":
     cuts_iter = []
     power_iter = []
 
+    comb_fit_iter = []
+
     # sleep_periods = fitness.generate_sleep_periods(len(connectivity_matrix), 0, 50, 3, 20)
     sleep_periods = [(24, 34), (11, 22), (32, 43), (21, 34), (2, 17), (48, 68), (6, 11), (42, 55)]
     print(sleep_periods)
@@ -70,6 +72,7 @@ if __name__ == "__main__":
 
     # Number of generations
     n_generations = 100
+
 
     for gen in range(n_generations):
         # Select the next generation individuals
@@ -108,6 +111,10 @@ if __name__ == "__main__":
         avg_power_comsumption = sum(pop_power_comsumption) / len(pop_power_comsumption)
         power_iter.append(avg_power_comsumption)
 
+        fitnesses = [ind.fitness.values[0] for ind in population]
+        avg_fitness = sum(fitnesses) / len(fitnesses)
+        comb_fit_iter.append(avg_fitness)
+
     # Plot the average number of cuts over time
     plt.plot(cuts_iter)
     plt.xlabel("Generation")
@@ -115,6 +122,8 @@ if __name__ == "__main__":
     
     #save to file
     plt.savefig(f'cuts_over_time_{timestamp}.png')
+
+    # clear graph
     plt.clf()
     # plot the average power consumption over time
     plt.plot(power_iter)
@@ -122,6 +131,15 @@ if __name__ == "__main__":
     plt.ylabel("Average power consumption")
      #save to file
     plt.savefig(f'power_over_time_{timestamp}.png')
+
+    # clear graph
+    plt.clf()
+    # plot the average combined fitness over time
+    plt.plot(comb_fit_iter)
+    plt.xlabel("Generation")
+    plt.ylabel("Average combined fitness")
+     #save to file
+    plt.savefig(f'combined_fitness_over_time_{timestamp}.png')
 
     # Extracting the best solution
     best_ind = tools.selBest(population, 1)[0]

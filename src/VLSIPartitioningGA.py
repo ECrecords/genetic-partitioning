@@ -57,7 +57,7 @@ class VLSIPartitionGA:
         return (y3,)
     
     def y(self, partition):
-        gamma_c = 0.5
+        gamma_c = 0.2
         gamma_5 = 1
 
         if hasattr(partition, "y1_value"):
