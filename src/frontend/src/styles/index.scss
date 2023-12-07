@@ -28,4 +28,13 @@ svg {
   .dragLine.hidden {
     stroke-width: 0;
   }
+
+  .partition {
+    cursor: pointer;
+
+    &:hover {
+      stroke: #e20b0b;
+      opacity: 0.8;
+    }
+  }
 }
