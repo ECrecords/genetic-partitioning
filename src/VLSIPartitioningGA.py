@@ -4,13 +4,12 @@ from deap import base, creator, tools
 import fitness
 
 class VLSIPartitionGA:
-    def __init__(self, connectivity_matrix, net_matrix, n_partitions, pop_size):
+    def __init__(self, connectivity_matrix, net_matrix, sleep_periods, n_partitions, pop_size):
         self.n_partitions = n_partitions
         self.pop_size = pop_size
         self.connectivity_matrix = connectivity_matrix
         self.net_matrix = net_matrix
-
-        self.sleep_periods = fitness.generate_sleep_periods(len(connectivity_matrix), 0, 100, 3, 100)
+        self.sleep_periods = sleep_periods
         self.toolbox = base.Toolbox()
         self.setup_deap()
 
@@ -76,9 +75,9 @@ class VLSIPartitionGA:
                     nets_crossing += 1
         return (nets_crossing,)
     
-    def eval_fitness_by_time(self, individual):
+    def y3(self, individual):
         # Calculate Y3
-        y3 = fitness.calculate_Y2(individual, self.sleep_periods, 0.5)
+        y3 = fitness.calculate_Y3(individual, self.sleep_periods, 3)
         return (y3,)
 
     
@@ -98,7 +97,7 @@ class VLSIPartitionGA:
         # Mutation: Randomly change the partition assignment of a module
         self.toolbox.register("mutate", tools.mutUniformInt, low=1, up=self.n_partitions, indpb=0.1)
         # Fitness function
-        self.toolbox.register("evaluate", self.eval_fitness_by_time)
+        self.toolbox.register("evaluate", self.y3)
 
 
     def create_population(self):
