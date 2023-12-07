@@ -57,8 +57,8 @@ class VLSIPartitionGA:
         return (y3,)
     
     def y(self, partition):
-        gamma_c = 0.2
-        gamma_5 = 1
+        gamma_c = 0.5
+        gamma_s = 0.5
 
         if hasattr(partition, "y1_value"):
             setattr(partition, "y1_value", self.y1(partition)[0])
@@ -70,7 +70,7 @@ class VLSIPartitionGA:
         else:
             partition.y3_value = self.y3(partition)[0]
         
-        power = gamma_5 * (1 / (1 + partition.y3_value))
+        power = gamma_s * (1 / (1 + partition.y3_value))
         cuts = gamma_c * partition.y1_value
 
         return ((power + cuts),)

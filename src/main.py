@@ -12,6 +12,7 @@ MUTATION_PROB = 0.2   # Probability of mutating an individual
 # generate timestamp
 timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
 
+graph_path = "graphs/"
 
 if __name__ == "__main__":
     # Usage
@@ -121,7 +122,7 @@ if __name__ == "__main__":
     plt.ylabel("Average number of cuts")
     
     #save to file
-    plt.savefig(f'cuts_over_time_{timestamp}.png')
+    plt.savefig(f'{graph_path}cuts_over_time_{timestamp}.png')
 
     # clear graph
     plt.clf()
@@ -130,7 +131,7 @@ if __name__ == "__main__":
     plt.xlabel("Generation")
     plt.ylabel("Average power consumption")
      #save to file
-    plt.savefig(f'power_over_time_{timestamp}.png')
+    plt.savefig(f'{graph_path}power_over_time_{timestamp}.png')
 
     # clear graph
     plt.clf()
@@ -139,7 +140,7 @@ if __name__ == "__main__":
     plt.xlabel("Generation")
     plt.ylabel("Average combined fitness")
      #save to file
-    plt.savefig(f'combined_fitness_over_time_{timestamp}.png')
+    plt.savefig(f'{graph_path}combined_fitness_over_time_{timestamp}.png')
 
     # Extracting the best solution
     best_ind = tools.selBest(population, 1)[0]
