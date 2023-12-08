@@ -52,7 +52,8 @@ class VLSIPartitionGA:
 
     def y3(self, individual):
         # Calculate Y3
-        y3 = fitness.calculate_Y3(individual, self.sleep_periods, 3)
+        y3 = fitness.calculate_Y3(individual, self.sleep_periods, 0.5)
+        y3 = max(y3,0)
         return (y3,)
     
     def y(self, partition):

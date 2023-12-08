@@ -55,7 +55,9 @@ if __name__ == "__main__":
     cuts_iter = []
     power_iter = []
 
-    sleep_periods = fitness.generate_sleep_periods(len(connectivity_matrix), 0, 50, 3, 20)
+    # sleep_periods = fitness.generate_sleep_periods(len(connectivity_matrix), 0, 50, 3, 20)
+    sleep_periods = [(24, 34), (11, 22), (32, 43), (21, 34), (2, 17), (48, 68), (6, 11), (42, 55)]
+    print(sleep_periods)
 
     ga = VLSIPartitionGA(connectivity_matrix, net_matrix, sleep_periods, n_partitions, pop_size)
     population = ga.create_population()
@@ -113,7 +115,7 @@ if __name__ == "__main__":
     
     #save to file
     plt.savefig(f'cuts_over_time_{timestamp}.png')
-
+    plt.clf()
     # plot the average power consumption over time
     plt.plot(power_iter)
     plt.xlabel("Generation")
