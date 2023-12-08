@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
     comb_fit_iter = []
 
-    sleep_periods = fitness.generate_sleep_periods(len(con_mat), 0, 50, 3, 20)
+    sleep_periods = fitness.generate_sleep_periods(len(con_mat), 0, 10, 1, 3)
     # sleep_periods = [(24, 34), (11, 22), (32, 43), (21, 34), (2, 17), (48, 68), (6, 11), (42, 55)]
     print(sleep_periods)
 
@@ -153,7 +153,40 @@ if __name__ == "__main__":
      #save to file
     plt.savefig(f'{graph_path}combined_fitness_over_time_{timestamp}.png')
 
+    
+
     # Extracting the best solution
     best_ind = tools.selBest(population, 1)[0]
     print(f"Best Individual: {best_ind}")
     print(f"Best Fitness: {best_ind.fitness.values}")
+
+    print(fitness.calculate_Y3_(best_ind, sleep_periods, 0.01))
+
+
+    plt.clf()
+    frequency_manual = {}
+    for item in best_ind:
+        if item in frequency_manual:
+            frequency_manual[item] += 1
+        else:
+            frequency_manual[item] = 1
+
+    # Extracting categories and their counts for the plot
+    categories_manual = list(frequency_manual.keys())
+    counts_manual = list(frequency_manual.values())
+
+    # Plotting the bar plot
+    bars = plt.bar(categories_manual, counts_manual)
+    for bar in bars:
+        yval = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2, yval, int(yval), ha='center', va='bottom')
+
+    x_ticks_range = range(min(best_ind), max(best_ind) + 1)
+    plt.xticks(x_ticks_range)
+
+    # Adding title and labels
+    plt.title('Numbers of modules pre partition')
+    plt.xlabel('Partition')
+    plt.ylabel('Number of modules')
+
+    plt.savefig(f'{graph_path}number_of_each_partition_{timestamp}.png')

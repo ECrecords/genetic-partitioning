@@ -114,8 +114,8 @@ def generate_sleep_periods(num_modules, min_start_time, max_start_time, min_dura
     """
     sleep_periods = []
     for _ in range(num_modules):
-        start_time = round(random.uniform(min_start_time, max_start_time))
-        duration = round(random.uniform(min_duration, max_duration))
+        start_time = random.uniform(min_start_time, max_start_time)
+        duration = random.uniform(min_duration, max_duration)
         finish_time = start_time + duration
         sleep_periods.append((start_time, finish_time))
 
@@ -167,6 +167,20 @@ def calculate_sleep_intervals_and_switches(partitioning_graph, sleep_periods):
     return partition_sleep_intervals, partition_switch_counts, partition_interval_counts
 
 def calculate_Y3(individuals, sleep_periods, b = 1.0):
+    partitioning_graph = list()
+    for idx in range(max(individuals) + 1):
+        partitioning = list()
+        for i, individual in enumerate(individuals):
+            if idx == individual:
+                partitioning.append(i)
+        partitioning_graph.append(partitioning)
+        pass
+    sleep_intervals, switch_counts, interval_counts = calculate_sleep_intervals_and_switches(partitioning_graph, sleep_periods)
+    # print(sum(np.array(interval_counts)))
+    # print(b * sum(np.array(switch_counts)))
+    return sum(np.array(interval_counts)) -  b * sum(np.array(switch_counts))
+
+def calculate_Y3_(individuals, sleep_periods, b = 1.0):
     partitioning_graph = list()
     for idx in range(max(individuals) + 1):
         partitioning = list()
